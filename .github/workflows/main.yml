@@ -1,59 +1,62 @@
-name: ci
-
-on:
-  push:
-    branches:
-      - "main"
-
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/raddy-blog:latest
+# name: ci
+# 
+# on:
+#   push:
+#     branches:
+#       - "main"
+# 
+# 
 # jobs:
-
 #   build:
-
 #     runs-on: ubuntu-latest
-
 #     steps:
-
-#     - name: Checkout
-#     - uses: actions/checkout@v4
-
-    
-#     - name: docker login
-#       uses: ocker/login-action@v3
-#       with:
-#        DOCKER_USER: ${{secrets.DOCKER_USER}}
-#        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-#       # run:
-#       #  docker login -u $DOCKER_USER -P $DOCKER_PASSWORD
-    
-#     - name: Build The Docker image
-#       run:
-#        docker build . --file Dockerfile --tag amdevops09/raddy-blog:$(date +%s)
-    
-#     - name: Docker PUSH
-#       run:
-#        docker push ${{secrets.DOCKER_USER}}/raddy-blog
+#       -
+#         name: Checkout
+#         uses: actions/checkout@v4
+#       -
+#         name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKERHUB_USERNAME }}
+#           password: ${{ secrets.DOCKERHUB_TOKEN }}
+#       -
+#         name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+#       -
+#         name: Build and push
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           file: ./Dockerfile
+#           push: true
+          # tags: ${{ secrets.DOCKERHUB_USERNAME }}/raddy-blog:latest
+#name: CI
+on:
+  - pull_request
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    name: job1
+    steps:
+      - name: start minikube
+        uses: medyagh/setup-minikube@latest
+        id: minikube
+        with:
+          cache: false
+          minikube-version: 1.24.0
+          driver: docker
+          container-runtime: containerd
+          kubernetes-version: v1.22.3
+          cpus: 4
+          memory: 4000m
+          cni: bridge
+          addons: registry,ingress
+          extra-config: 'kubelet.max-pods=10'
+          feature-gates: 'DownwardAPIHugePages=true'
+          mount-path: '/Users/user1/test-files:/testdata'
+          wait: false
+          insecure-registry: 'localhost:5000,10.0.0.0/24'
+          start-args: '--delete-on-failure --subnet 192.168.50.0'
+      # now you can run kubectl to see the pods in the cluster
+      - name: kubectl
+        run: kubectl get pods -A
